@@ -1,5 +1,6 @@
 package com.utn.entities;
 
+import jakarta.persistence.Entity;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -12,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(
         callSuper = false,
         onlyExplicitlyIncluded = true)
+@Entity
 public class Producto extends Base{
 
     @EqualsAndHashCode.Include

@@ -1,5 +1,7 @@
 package com.utn.entities;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -8,13 +10,14 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode(
         callSuper = false,
-        onlyExplicitlyIncluded = false
-)
+        onlyExplicitlyIncluded = false)
+@Entity
 public class DetallePedido extends Base {
 
     private int cantidad;
     private Double subtotal;
     @EqualsAndHashCode.Include
+    @ManyToOne
     private final Producto producto;
 
     public DetallePedido(int cantidad, Producto producto) {

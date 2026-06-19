@@ -1,5 +1,9 @@
 import com.utn.entities.*;
 import com.utn.enums.FormaPago;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +14,10 @@ public class Main {
     public static void main(String[] args) {
 
         final Set<Producto> productos = new HashSet<>();
+
+        // Crear instancia de EntityManagerFactory
+        EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("persistenceUnit");
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         System.out.println("Creando 10 productos...");
 
