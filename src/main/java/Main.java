@@ -1,5 +1,6 @@
 import com.utn.entities.*;
 import com.utn.enums.FormaPago;
+import com.utn.enums.Rol;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
@@ -18,6 +19,32 @@ public class Main {
         // Crear instancia de EntityManagerFactory
         EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("persistenceUnit");
         EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        System.out.println("Creando 2 usuarios...");
+        Usuario usuarioAdmin = Usuario.builder()
+                .nombre("Pepe")
+                .apellido("Fernandez")
+                .mail("p.fernandez@mail.com")
+                .celular("542944123321")
+                .contrasena("abc123")
+                .rol(Rol.ADMIN)
+                .build();
+
+        Usuario usuarioUser = Usuario.builder()
+                .nombre("Juan")
+                .apellido("Perez")
+                .mail("jp@mail.com")
+                .celular("543514123321")
+                .contrasena("abc321")
+                .rol(Rol.USUARIO)
+                .build();
+
+        System.out.println("Persistiendo los usuarios...");
+
+        entityManager.getTransaction().begin();
+        entityManager.persist(usuarioUser);
+        entityManager.persist(usuarioAdmin);
+        entityManager.getTransaction().commit();
 
         System.out.println("Creando 10 productos...");
 
@@ -124,6 +151,49 @@ public class Main {
                 buzo,
                 zapatillas));
 
+        System.out.println("Creando 3 categorías...");
+
+        Categoria electronica = Categoria.builder()
+                .nombre("Electrónica")
+                .descripcion("Productos electrónicos y accesorios tecnológicos")
+                .build();
+
+        Categoria alimentos = Categoria.builder()
+                .nombre("Alimentos")
+                .descripcion("Productos alimenticios y bebidas")
+                .build();
+
+        Categoria ropa = Categoria.builder()
+                .nombre("Ropa")
+                .descripcion("Prendas de vestir y accesorios")
+                .build();
+
+        System.out.println("Asociando productos a categorías...");
+
+        electronica.addProducto(pendrive);
+        electronica.addProducto(auriculares);
+        electronica.addProducto(teclado);
+        electronica.addProducto(cargador);
+
+        alimentos.addProducto(alfajor);
+        alimentos.addProducto(gaseosa);
+        alimentos.addProducto(chicles);
+
+        ropa.addProducto(remera);
+        ropa.addProducto(buzo);
+        ropa.addProducto(zapatillas);
+
+        System.out.println("Persistiendo categorías y productos en la base de datos...");
+
+        entityManager.getTransaction().begin();
+        entityManager.persist(electronica);
+        entityManager.persist(alimentos);
+        entityManager.persist(ropa);
+        entityManager.getTransaction().commit();
+
+        System.out.println("Categorías y productos persistidos correctamente.\n");
+
+
         System.out.println("Creando 3 pedidos...");
 
         Pedido pedido1 = Pedido.builder()
@@ -138,6 +208,7 @@ public class Main {
                 .formaPago(FormaPago.TARJETA)
                 .build();
 
+
         System.out.println("Agregando detalles a los pedidos...");
 
         pedido1.addDetallePedido(1, pendrive);
@@ -150,25 +221,65 @@ public class Main {
         pedido3.addDetallePedido(10, chicles);
         pedido3.addDetallePedido(1, teclado);
 
-        System.out.println("Imprimiendo por consola el listado de productos disponibles:\n");
+        System.out.println("Persistiendo los pedidos...");
 
-        Map<Boolean, List<Producto>> particionSegunDisponibilidad = productos.stream()
-                .collect(Collectors.partitioningBy(Producto::getDisponible));
+        entityManager.getTransaction().begin();
+        entityManager.persist(pedido1);
+        entityManager.persist(pedido2);
+        entityManager.persist(pedido3);
+        entityManager.getTransaction().commit();
 
-        particionSegunDisponibilidad.get(true).forEach(System.out::println);
+        System.out.println("Actualizando el pedido 1, agregando un producto más...");
 
-        System.out.println("\nImprimiendo por consola los detalles de un pedido:\n");
+        entityManager.getTransaction().begin();
+        pedido1.addDetallePedido(3, gaseosa);
+        entityManager.merge(pedido1);
+        entityManager.getTransaction().commit();
 
-        pedido1.getDetalles().forEach(System.out::println);
+        System.out.println("Pedido 1 actualizado y persistido correctamente.\n");
 
-        System.out.println("\nImprimiendo la cantidad de items del pedido anterior:\n");
+        System.out.println("Actualizando el pedido 2, cambiando la cantidad de un producto...");
 
-        System.out.println(pedido1.getDetalles().stream().mapToInt(DetallePedido::getCantidad).sum());
+        entityManager.getTransaction().begin();
+        pedido2.findDetallePedidoByProducto(remera).ifPresent(detalle -> detalle.setCantidad(10));
+        entityManager.merge(pedido2);
+        entityManager.getTransaction().commit();
 
-        System.out.println("\nDetectando productos con stock menor a 5:\n");
+        System.out.println("Pedido 2 actualizado y persistido correctamente.\n");
 
-        productos.stream()
-                .filter((producto -> producto.getStock() < 5))
-                .forEach(System.out::println);
+        System.out.println("Buscando usuario con id 1...");
+
+        Usuario usuarioBuscado = entityManager.find(Usuario.class, 1L);
+
+        if (usuarioBuscado != null) {
+            System.out.println("Usuario encontrado: " + usuarioBuscado.getNombre() + " " + usuarioBuscado.getApellido());
+        } else {
+            System.out.println("Usuario con id 1 no encontrado.");
+        }
+
+        System.out.println("Buscando usuario por mail (p.fernandez@mail.com)...");
+
+        usuarioBuscado = entityManager.find(Usuario.class, 2L);
+
+        if (usuarioBuscado != null) {
+            System.out.println("Usuario encontrado: " + usuarioBuscado.getNombre() + " " + usuarioBuscado.getApellido());
+        } else {
+            System.out.println("Mail no encontrado.");
+        }
+
+       System.out.println("Borrando el producto auriculares...");
+
+       entityManager.getTransaction().begin();
+       Producto pABorrar = entityManager.find(Producto.class, auriculares.getId());
+       if (pABorrar != null) {
+           pABorrar.getCategoria().getProductos().remove(pABorrar);
+           entityManager.remove(pABorrar);
+           System.out.println("Producto auriculares eliminado correctamente.");
+       }
+       entityManager.getTransaction().commit();
+
+    entityManager.close();
+    entityManagerFactory.close();
+
     }
 }

@@ -8,6 +8,13 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Table;
 
 @Getter
 @Setter
@@ -15,6 +22,8 @@ import java.util.Set;
 @SuperBuilder
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
+@Entity
+@Table(name = "pedidos")
 public class Pedido extends Base implements Calculable {
 
     @Builder.Default
@@ -24,7 +33,17 @@ public class Pedido extends Base implements Calculable {
     private Double total = 0.0;
     private LocalDate fecha;
     private FormaPago formaPago;
-    private final Set<DetallePedido> detalles = new HashSet<DetallePedido>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    @ToString.Exclude
+    private Usuario usuario;
+
+    @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<DetallePedido> detalles = new HashSet<>();
 
     public abstract static class PedidoBuilder<C extends Pedido, B extends PedidoBuilder<C, B>>
             extends Base.BaseBuilder<C, B> {
@@ -40,6 +59,7 @@ public class Pedido extends Base implements Calculable {
 
     public void addDetallePedido(int cantidad, Producto producto) {
         DetallePedido nuevoDetalle = new DetallePedido(cantidad, producto);
+        nuevoDetalle.setPedido(this);
         if (this.detalles.add(nuevoDetalle)) {
             calcularTotal();
         } else {

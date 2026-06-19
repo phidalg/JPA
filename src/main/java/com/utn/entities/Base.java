@@ -9,7 +9,6 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.AnyDiscriminatorImplicitValues;
 
 import java.time.LocalDateTime;
-import java.util.concurrent.atomic.AtomicLong;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,12 +21,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Base {
 
-    private static final AtomicLong COUNTER = new AtomicLong(100_000L);
-
     @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private final Long id = COUNTER.incrementAndGet();
+    private Long id;
     private boolean eliminado;
     private final LocalDateTime createdAt = LocalDateTime.now();
 

@@ -6,12 +6,17 @@
                                  https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
              version="3.0">
 
-    <persistence-unit name="miUnidad"
+    <persistence-unit name="persistenceUnit"
                       transaction-type="RESOURCE_LOCAL">
 
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <!-- TUS CLASES VAN ACÁ -->
+        <!-- Entidades -->
+        <class>com.utn.entities.Categoria</class>
+        <class>com.utn.entities.Producto</class>
+        <class>com.utn.entities.Pedido</class>
+        <class>com.utn.entities.DetallePedido</class>
+        <class>com.utn.entities.Usuario</class>
 
         <properties>
 
@@ -34,7 +39,7 @@
 
             <!-- Hibernate -->
             <property name="hibernate.hbm2ddl.auto"
-                      value="update"/>
+                      value="create"/>
 
             <property name="hibernate.show_sql"
                       value="true"/>
